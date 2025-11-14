@@ -12,4 +12,4 @@ def solve(p):
 
 time_start = time.perf_counter()
 print(f'Solution: {solve(load("day01.txt"))}')
-print(f'Solved in {time.perf_counter()-time_start:.5f} Sec.')
+print(f'Solved in {time.perf_counter() - time_start:.5f} Sec.')
