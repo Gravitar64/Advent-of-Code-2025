@@ -3,31 +3,31 @@ import time
 
 def load(file):
   with open(file) as f:
-    return {(x,y) for y,zeile in enumerate(f.read().split('\n')) 
-                  for x,c in enumerate(zeile) if c == '@'}
+    return {(x, y) for y, zeile in enumerate(f.read().split('\n')) 
+            for x, c in enumerate(zeile) if c == '@'}
 
 
-def nachbarn(x,y,p):
-  nachbarn = {(x+1,y), (x-1,y), (x,y+1), (x,y-1), (x+1,y+1), (x-1,y-1), (x-1, y+1), (x+1, y-1)}
+def nachbarn(x, y, p):
+  nachbarn = {(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1),
+              (x + 1, y + 1), (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1)}
   return p & nachbarn
-
 
 
 def solve(p):
   p1 = p2 = 0
-  for x,y in p:
-    p1 += len(nachbarn(x,y,p)) < 4
+  
+  p1 = sum(len(nachbarn(x, y, p)) < 4 for x,y in p)
   
   while True:
-    änderungen = False
-    rolls = set()
-    for x,y in p:
-      if len(nachbarn(x,y,p)) < 4:
-        rolls.add((x,y))
-        p2 += 1
-        änderungen = True
-    p -= rolls    
-    if not änderungen: break
+    remove_rolls = set()
+    
+    for x, y in p:
+      if len(nachbarn(x, y, p)) > 3: continue
+      remove_rolls.add((x, y))
+    
+    if not remove_rolls: break
+    p2 += len(remove_rolls)
+    p -= remove_rolls
 
   return p1, p2
 
