@@ -19,12 +19,7 @@ def solve(p):
   
   p2 = 0
   while True:
-    remove_rolls = set()
-    
-    for x, y in p:
-      if len(nachbarn(x, y, p)) > 3: continue
-      remove_rolls.add((x, y))
-    
+    remove_rolls = {(x,y) for x,y in p if len(nachbarn(x,y,p)) < 4}
     if not remove_rolls: break
     p2 += len(remove_rolls)
     p -= remove_rolls
