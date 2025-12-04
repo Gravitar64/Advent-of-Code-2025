@@ -14,10 +14,10 @@ def nachbarn(x, y, p):
 
 
 def solve(p):
-  p1 = p2 = 0
   
   p1 = sum(len(nachbarn(x, y, p)) < 4 for x,y in p)
   
+  p2 = 0
   while True:
     remove_rolls = set()
     
