@@ -8,11 +8,11 @@ def load(file):
 
 def solve(p, länge, e=0):
   for banks in p:
-    left, right, joltage, i = banks[:-länge], [*banks[-länge:]], '', -1
-    while right:
-      left = left[i + 1 :] + right.pop(0)
-      i = left.index(max(left))
-      joltage += left[i]
+    suchbereich, reserve, joltage, i = banks[:-länge], [*banks[-länge:]], '', -1
+    while reserve:
+      suchbereich = suchbereich[i + 1:] + reserve.pop(0)
+      i = suchbereich.index(max(suchbereich))
+      joltage += suchbereich[i]
     e += int(joltage)
   return e
 
