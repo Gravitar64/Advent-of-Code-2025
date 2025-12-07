@@ -1,4 +1,4 @@
-import time, re, math
+import time
 
 
 def load(file):
@@ -9,6 +9,8 @@ def load(file):
 def solve(p):
   p1 = p2 = 0
   beams = {p[0].index('S')}
+  timelines = [0] * len(p[0])
+  timelines[p[0].index('S')] = 1
   for zeile in p[1:]:
     new_beams = set()
     for beam in beams:
@@ -16,10 +18,13 @@ def solve(p):
         new_beams.add(beam)
         continue
       new_beams.update({beam-1,beam+1})
+      timelines[beam-1] += timelines[beam]
+      timelines[beam+1] += timelines[beam]
+      timelines[beam] = 0
       p1 += 1
-    p2 += len(new_beams)
     beams = new_beams  
-  return p1,p2    
+  p2 += sum(timelines)
+  return p1,p2   
 
 
 
