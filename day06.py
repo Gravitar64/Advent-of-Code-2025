@@ -3,32 +3,28 @@ import time, re, math
 
 def load(file):
   with open(file) as f:
-    raw = f.readlines()
-    zahlen = [re.findall('\d+', zeile) for zeile in raw[:-1]]
-    operators = raw[-1].replace(' ', '')
-    return zahlen, operators
+    return f.read().split('\n')
 
 
 def solve(p):
   p1 = p2 = 0
-  zahlen, operators = p
-
-  for i, z in enumerate(zip(*zahlen)):
-    if operators[i] == '*':
-      p1 += math.prod(map(int, z))
+  zahlen, operators = p[:-1], re.findall('[*+] +',p[-1])
+  
+  left = 0
+  for op in operators:
+    spalte = [z[left:left+len(op)] for z in zahlen]
+    stellen = [''.join(s).replace(' ','') for s in zip(*spalte)]
+    stellen = [s for s in stellen if s.isnumeric()]
+    
+    operator = op[0]
+    if operator == '*':
+      p1 += math.prod(map(int,spalte))
+      p2 += math.prod(map(int,stellen))
     else:
-      p1 += sum(map(int, z))
-
-  for i1, z in enumerate(zip(*zahlen)):
-    max_l = max(len(n) for n in z)
-    for i2, n in enumerate(z):
-      z = list(z)
-      if len(n) < max_l:
-        z[i2] = '.' * (max_l - len(n)) + n
-    for stellen in zip(*z):
-      print(stellen)
-    print()
-
+      p1 += sum(map(int,spalte))
+      p2 += sum(map(int,stellen))
+    left += len(op)
+  
   return p1, p2
 
 
