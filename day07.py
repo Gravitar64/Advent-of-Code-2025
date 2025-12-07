@@ -7,11 +7,10 @@ def load(file):
 
 
 def solve(p):
-  p1 = p2 = 0
-  beams = [0] * 16
+  p1 = 0
+  beams = [0] * 200
   beams[p.pop(0)[0]] = 1
-  print(beams)
-
+  
   for zeile in p:
     for splitter in zeile:
       if not beams[splitter]: continue
@@ -19,10 +18,8 @@ def solve(p):
       beams[splitter - 1] += beams[splitter]
       beams[splitter + 1] += beams[splitter]
       beams[splitter] = 0
-    #if zeile: print(beams)
-  p2 += sum(beams)
-
-  return p1, p2
+  
+  return p1, sum(beams)
 
 
 time_start = time.perf_counter()
