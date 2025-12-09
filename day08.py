@@ -41,7 +41,7 @@ def solve(p):
       p1 = math.prod(top3)
 
     # Part2
-    if len(circuits) == 1 and len(p) == len(circuits[point2circuit[a]]):
+    if len(p) == len(list(circuits.values())[0]):
       p2 = a[0] * b[0]
       break
 
