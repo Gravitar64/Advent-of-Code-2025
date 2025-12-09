@@ -1,4 +1,4 @@
-import time, itertools, collections, math
+import time, itertools, math
 
 
 def load(file):
@@ -6,34 +6,19 @@ def load(file):
     return [tuple(int(n) for n in zeile.split(',')) for zeile in f.read().split('\n')]
 
 
-def entfernung(a, b):
-  return abs(a[0] - b[0]) ** 2 + abs(a[1] - b[1]) ** 2 + abs(a[2] - b[2]) ** 2
-
-
 def solve(p):
-  entf_map = [(entfernung(a, b), a, b) for a, b in itertools.combinations(p, 2)]
-  point2circuit = dict()
-  circuits = collections.defaultdict(set)
+  entf_map = sorted(itertools.combinations(p,2), key=lambda x:math.dist(*x))
+  circuits = {i : {pos} for i,pos in enumerate(p)}
 
-  c_id = 0
-  for i, (_, a, b) in enumerate(sorted(entf_map)):
-    if a not in point2circuit and b not in point2circuit:
-      point2circuit[a] = c_id
-      point2circuit[b] = c_id
-      circuits[c_id] |= {a, b}
-      c_id += 1
-    elif a in point2circuit and b not in point2circuit:
-      point2circuit[b] = point2circuit[a]
-      circuits[point2circuit[a]] |= {b}
-    elif b in point2circuit and a not in point2circuit:
-      point2circuit[a] = point2circuit[b]
-      circuits[point2circuit[b]] |= {a}
-    elif a in point2circuit and b in point2circuit and point2circuit[a] != point2circuit[b]:
-      new_id, old_id = point2circuit[a], point2circuit[b]
-      circuits[new_id] |= circuits[old_id]
-      for point in circuits[old_id]:
-        point2circuit[point] = new_id
-      del circuits[old_id]
+  
+  for i, (a, b) in enumerate(entf_map):
+    for id,boxes in circuits.items():
+      if a in boxes: id1=id
+      if b in boxes: id2=id
+
+    if id1 != id2:
+      circuits[id1] |= circuits[id2]
+      del circuits[id2]
 
     # Part 1
     if i == 999:
@@ -41,7 +26,7 @@ def solve(p):
       p1 = math.prod(top3)
 
     # Part2
-    if len(p) == len(list(circuits.values())[0]):
+    if len(circuits) == 1:
       p2 = a[0] * b[0]
       break
 
