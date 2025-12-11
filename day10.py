@@ -1,4 +1,4 @@
-import time
+import time, collections
 
 
 def load(file):
@@ -7,15 +7,16 @@ def load(file):
 
 
 def bfs(target, buttons):
-  queue, seen = [(0,0)], {0}
-  while queue:
-    pressed, lights = queue.pop(0)
+  q, seen = collections.deque(), {0}
+  q.append((0,0))
+  while q:
+    pressed, lights = q.popleft()
     if lights == target: return pressed
     for button in buttons:
       new_lights = lights ^ button
       if new_lights in seen: continue
       seen.add(new_lights)
-      queue.append((pressed+1, new_lights))
+      q.append((pressed+1, new_lights))
 
 
 def get_joltage(state,button,anz):
@@ -26,21 +27,19 @@ def get_joltage(state,button,anz):
 
 def part2(target, buttons):
   state = [0]*len(target)
-  queue, seen = [(0,state)], {tuple(state)}
-  while queue:
-    pressed, state = queue.pop(0)
+  q, seen = collections.deque(), {tuple(state)}
+  q.append((0,state))
+  while q:
+    pressed, state = q.popleft()
     if state == target: return pressed
     for anz,i in sorted([(min(target[n]-state[n] for n in b),i) for i,b in enumerate(buttons)]):
-      if anz < 0: 
-        print(anz,i)
-        continue
+      if anz < 1: continue
       for ad in range(anz,0,-1):
         new_state = get_joltage(state[:],buttons[i],ad)
-        #if any(a > b for a,b in zip(new_state,target)): break
         if tuple(new_state) in seen: continue
         seen.add(tuple(new_state))
-        queue.append((pressed+ad, new_state))
-      
+        q.append((pressed+ad, new_state))
+              
   
 
 def solve(p):
