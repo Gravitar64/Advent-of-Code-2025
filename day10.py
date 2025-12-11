@@ -1,4 +1,7 @@
-import time, collections
+# Part2 by 4HbQ:
+# https://www.reddit.com/r/adventofcode/comments/1pity70/comment/nt8vlv9/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+
+import time, collections, scipy
 
 
 def load(file):
@@ -7,8 +10,7 @@ def load(file):
 
 
 def bfs(target, buttons):
-  q, seen = collections.deque(), {0}
-  q.append((0,0))
+  q, seen = collections.deque([(0, 0)]), {0}
   while q:
     pressed, lights = q.popleft()
     if lights == target: return pressed
@@ -16,44 +18,37 @@ def bfs(target, buttons):
       new_lights = lights ^ button
       if new_lights in seen: continue
       seen.add(new_lights)
-      q.append((pressed+1, new_lights))
+      q.append((pressed + 1, new_lights))
 
-
-def get_joltage(state,button,anz):
-  for i in button:
-    state[i] += anz
-  return state  
-
-
-def part2(target, buttons):
-  state = [0]*len(target)
-  q, seen = collections.deque(), {tuple(state)}
-  q.append((0,state))
-  while q:
-    pressed, state = q.popleft()
-    if state == target: return pressed
-    for anz,i in sorted([(min(target[n]-state[n] for n in b),i) for i,b in enumerate(buttons)]):
-      if anz < 1: continue
-      for ad in range(anz,0,-1):
-        new_state = get_joltage(state[:],buttons[i],ad)
-        if tuple(new_state) in seen: continue
-        seen.add(tuple(new_state))
-        q.append((pressed+ad, new_state))
-              
-  
 
 def solve(p):
   p1 = p2 = 0
-  b2int = lambda x: sum(1<<i for i in reversed(x))
-  
+  b2int = lambda x: sum(1 << i for i in reversed(x))
+
   for lights, *buttons, joltages in p:
-    t1 = time.perf_counter()
-    light = b2int([i for i,c in enumerate(lights) if c == '#'])
-    buttons = [[int(n) for n in b.split(',')] for b in buttons]
-    joltages = [int(n) for n in joltages.split(',')]
+    light = b2int([i for i, c in enumerate(lights) if c == '#'])
+    buttons = [[*map(int, b.split(','))] for b in buttons]
+    joltages = [*map(int, joltages.split(','))]
+
     p1 += bfs(light, [b2int(b) for b in buttons])
-    p2 += (e:=part2(joltages, buttons))
-    print(f'{e} {time.perf_counter()-t1:.2f} Sek.')
+
+    # The coefficients of the linear objective function to be minimized.
+    coeff = [1] * len(buttons)
+        
+    # The equality constraint matrix. Each row of A_eq specifies the coefficients
+    # of a linear equality constraint on x.
+    ecm = [[i in b for b in buttons] for i in range(len(joltages))]
+
+    # b_eq 1-D array
+    # The equality constraint vector. Each element of A_eq @ x must equal the
+    # corresponding element of b_eq.
+
+    # Integrality
+    # Indicates the type of integrality constraint on each decision
+    # 1 : Integer variable; decision variable must be an integer within bounds.
+    result = scipy.optimize.linprog(coeff, A_eq=ecm, b_eq=joltages, integrality=1)
+    p2 += round(result.fun)
+    
   return p1, p2
 
 
