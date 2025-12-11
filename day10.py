@@ -23,7 +23,7 @@ def bfs(target, buttons):
 
 def solve(p):
   p1 = p2 = 0
-  b2int = lambda x: sum(1 << i for i in reversed(x))
+  b2int = lambda x: sum(1 << i for i in x)
 
   for lights, *buttons, joltages in p:
     light = b2int([i for i, c in enumerate(lights) if c == '#'])
@@ -32,23 +32,10 @@ def solve(p):
 
     p1 += bfs(light, [b2int(b) for b in buttons])
 
-    # The coefficients of the linear objective function to be minimized.
     coeff = [1] * len(buttons)
-        
-    # The equality constraint matrix. Each row of A_eq specifies the coefficients
-    # of a linear equality constraint on x.
     ecm = [[i in b for b in buttons] for i in range(len(joltages))]
-
-    # b_eq 1-D array
-    # The equality constraint vector. Each element of A_eq @ x must equal the
-    # corresponding element of b_eq.
-
-    # Integrality
-    # Indicates the type of integrality constraint on each decision
-    # 1 : Integer variable; decision variable must be an integer within bounds.
     result = scipy.optimize.linprog(coeff, A_eq=ecm, b_eq=joltages, integrality=1)
     p2 += round(result.fun)
-    
   return p1, p2
 
 
