@@ -1,83 +1,87 @@
-import time, collections
+import time
 
 
 def load(file):
   with open(file) as f:
-    return [[zeile for zeile in block.split('\n')] for block in f.read().split('\n\n')]
+    return [block.split('\n') 
+            for block in f.read().
+            replace('x', ' ').
+            replace(':', '').
+            split('\n\n')]
 
 
-def get_xy(space):
-  coord = {(x,y) for y,z in enumerate(space) for x,c in enumerate(z) if c == '#'}
+def get_xy(shape):
+  coord = {(x, y) for y, z in enumerate(shape) for x, c in enumerate(z) if c == '#'}
   return len(coord), coord
 
 
-def to_big(region,ids,presents):
-  size_shapes = sum(presents[i][0] * n for i,n in enumerate(ids))
-  return size_shapes > region
+def to_big(size, ids, shapes):
+  size_shapes = sum(shapes[i][0] * n for i, n in enumerate(ids))
+  return size_shapes > size
 
 
-def precalculate(presents):
-  for id,(size,shape) in presents.items():
-    shapes = set()
+def precalculate(shapes):
+  for id, (size, shape) in shapes.items():
+    new_shapes = set()
     for _ in range(4):
-      rot=set()
-      for x,y in shape:
-        x,y=x-1,y-1
-        x,y=-y,x
-        x,y=x+1,y+1
-        rot.add((x,y))
-      shapes.add(frozenset(rot))
-      flip_ver = {(2-x,y) for x,y in rot}
-      shapes.add(frozenset(flip_ver))
-      flip_hor = {(x,2-y) for x,y in rot}
-      shapes.add(frozenset(flip_hor))
+      rot = set()
+      for x, y in shape:
+        x, y = x - 1, y - 1
+        x, y = -y, x
+        x, y = x + 1, y + 1
+        rot.add((x, y))
+      new_shapes.add(frozenset(rot))
+      flip_ver = {(2 - x, y) for x, y in rot}
+      new_shapes.add(frozenset(flip_ver))
+      flip_hor = {(x, 2 - y) for x, y in rot}
+      new_shapes.add(frozenset(flip_hor))
       shape = rot
-    presents[id]= size, shapes
-  return presents        
+    shapes[id] = size, new_shapes
+  return shapes
 
 
 def print_shape(shape):
   for y in range(3):
     print()
     for x in range(3):
-      if (x,y) in shape: 
-        print('#',end='')
+      if (x, y) in shape:
+        print('#', end='')
       else:
-        print('.',end='')
+        print('.', end='')
   print()
 
 
-def bfs(width,height,ids,presents):
-  free = set((x,y) for x in range(width) for y in range(height))
-  q = collections.deque([(free,ids)])
+def dfs(width, height, ids, shapes):
+  free = set((x, y) for x in range(width) for y in range(height))
+  q = [(free, ids)]
   while q:
     free, ids = q.pop()
-    if sum(ids) == 0: return True
-    for i,id in enumerate(ids):
-      if id == 0: continue
-      for shape in presents[i][1]:
-        for dx,dy in free:
-          transform = {(x+dx,y+dy) for x,y in shape}
-          if not transform.issubset(free): continue
+    if sum(ids) == 0: return 1
+    for id, n in enumerate(ids):
+      if n == 0: continue
+      for shape in shapes[id][1]:
+        for dx, dy in free:
+          transform = {(x + dx, y + dy) for x, y in shape}
+          if not transform.issubset(free):
+            continue
           new_ids = ids[:]
-          new_ids[i] -= 1
-          q.append((free-transform,new_ids))
+          new_ids[id] -= 1
+          q.append((free - transform, new_ids))
+  return 0
 
 
 def solve(p):
   p1 = 0
-  presents = {int(pr[0][:-1]): get_xy(pr[1:]) for pr in p[:-1]}
-  presents = precalculate(presents)
-  for space in p[-1]:
-    dim,*ids = space.split()
-    width,height = map(int,dim[:-1].split('x'))
-    region = width * height
-    ids = [*map(int,ids)]
-    if to_big(region,ids,presents): continue
-    p1 += bfs(width, height, ids, presents)
+  regions = [[*map(int,r.split())] for r in p.pop()]
+  shapes = {int(id): get_xy(s) for id, *s in p}
+  shapes = precalculate(shapes)
+  for width, height, *ids in regions:
+    size = width * height
+    if to_big(size, ids, shapes): continue
+    p1 += dfs(width, height, ids, shapes)
     print(p1)
-    
-  return p1  
+
+  return p1
 
 
 time_start = time.perf_counter()
