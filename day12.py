@@ -1,19 +1,17 @@
-import time
+#Based on an idea from 4HbQ
+#https://www.reddit.com/r/adventofcode/comments/1pkje0o/comment/ntlkg9i/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+
+import time, re
 
 
 def load(file):
   with open(file) as f:
-    return [block.split('\n') 
-            for block in f.read().
-            replace('x', ' ').
-            replace(':', '').
-            split('\n\n')][-1]
+    return [[*map(int,re.findall('\d+',r))] 
+             for r in f.readlines()[30:]]
 
 
 def solve(p):
-  regions = [[*map(int,r.split())] for r in p]
-  return sum(w//3 * h//3 >= sum(ids) for w, h, *ids in regions)
-
+  return sum(w//3*h//3 >= sum(ids) for w,h,*ids in p)
 
 time_start = time.perf_counter()
 print(f'Solution: {solve(load("day12.txt"))}')
